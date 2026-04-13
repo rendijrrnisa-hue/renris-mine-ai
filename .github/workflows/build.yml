@@ -1,55 +1,36 @@
-name: Build APK
+name: Build Android APK
 
 on:
   push:
-    branches:
-      - main
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
 
-      - name: Install Dependencies
-        run: |
-          npm install
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+    - name: Install Dependencies
+      run: |
+        npm install -g cordova
+        cordova create app com.renris.mine RenrisMineAI
+        cd app
+        cordova platform add android
+        cp ../index.html www/index.html
 
-      - name: Init Capacitor
-        run: |
-          npx cap init RenrisMineAI com.renris.mine --web-dir=.
+    - name: Build APK
+      run: |
+        cd app
+        cordova build android
 
-      - name: Add Android
-        run: npx cap add android
-
-      - name: Sync
-        run: npx cap sync
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Build APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: RenrisMineAI
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: RenrisMineAI
+        path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
