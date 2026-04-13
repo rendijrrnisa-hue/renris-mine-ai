@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Renris Mine AI</title>
+
+<style>
+body{
+background:#050b1a;
+color:white;
+font-family:Arial;
+text-align:center;
+}
+
+h1{
+color:#00f7ff;
+}
+
+button{
+background:#00f7ff;
+border:none;
+padding:15px;
+margin:10px;
+border-radius:10px;
+font-size:18px;
+}
+
+.card{
+background:#0a1228;
+padding:20px;
+margin:20px;
+border-radius:15px;
+}
+
+.balance{
+font-size:25px;
+color:#00f7ff;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Renris Mine AI</h1>
+
+<div class="card">
+<h2>Wallet</h2>
+<p id="wallet"></p>
+</div>
+
+<div class="card">
+<h2>Balance</h2>
+<p class="balance" id="balance">0 RAI</p>
+</div>
+
+<button onclick="startMining()">Start Mining</button>
+<button onclick="withdraw()">Withdraw</button>
+
+<script>
+
+let wallet = localStorage.getItem("wallet");
+
+if(!wallet){
+wallet = "RAI"+Math.random().toString(36).substring(7);
+localStorage.setItem("wallet",wallet);
+}
+
+document.getElementById("wallet").innerText = wallet;
+
+let balance = 0;
+
+function startMining(){
+
+setInterval(()=>{
+
+balance += 0.05;
+
+document.getElementById("balance").innerText =
+balance.toFixed(2)+" RAI";
+
+},3000)
+
+}
+
+function withdraw(){
+
+fetch("/withdraw",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+wallet:wallet,
+amount:balance
+})
+})
+
+.then(res=>res.json())
+.then(data=>{
+
+alert("Withdraw sukses");
+
+balance=0;
+
+document.getElementById("balance").innerText="0 RAI";
+
+})
+
+}
+
+</script>
+
+</body>
+</html>
