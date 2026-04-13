@@ -1,0 +1,43 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install
+      run: |
+        npm install
+        npm install -g @capacitor/cli
+
+    - name: Build App
+      run: |
+        npm install @capacitor/core
+        npx cap init RenrisMineAI com.renris.mine
+        mkdir www
+        cp index.html www/
+        npx cap add android
+
+    - name: Build APK
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleDebug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: RenrisMineAI
+        path: android/app/build/outputs/apk/debug/app-debug.apk
