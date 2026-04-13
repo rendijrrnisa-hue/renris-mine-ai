@@ -19,9 +19,20 @@ jobs:
           node-version: 18
 
       - name: Install Dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install @capacitor/core
+          npm install @capacitor/cli
+          npm install @capacitor/android
 
-      - name: Sync Capacitor
+      - name: Init Capacitor
+        run: |
+          npx cap init RenrisMineAI com.renris.mine --web-dir=.
+
+      - name: Add Android
+        run: npx cap add android
+
+      - name: Sync
         run: npx cap sync
 
       - name: Build APK
