@@ -10,33 +10,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Node
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Web
-        run: npm run build || echo "No build script"
-
-      - name: Add Android
-        run: npx cap add android || echo "Android exists"
-
-      - name: Sync
-        run: npx cap sync
+      - name: Sync Capacitor
+        run: npx cap sync android
 
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: renris-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: RenrisMineAI
+          path: android/app/build/outputs/apk/release/app-release.apk
