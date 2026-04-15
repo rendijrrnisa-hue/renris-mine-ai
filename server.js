@@ -1,60 +1,123 @@
 const express = require("express")
-const cors = require("cors")
+const fs = require("fs")
 
 const app = express()
 
-app.use(cors())
-app.use(express.json())
-app.use(express.static("."))
-
+let balances = {}
+let history = []
 let blockchain = []
+
+function save(){
+
+fs.writeFileSync("data.json",
+JSON.stringify({
+balances,
+history,
+blockchain
+})
+)
+
+}
+
+function load(){
+
+if(fs.existsSync("data.json")){
+
+let data = JSON.parse(
+fs.readFileSync("data.json")
+)
+
+balances = data.balances || {}
+history = data.history || []
+blockchain = data.blockchain || []
+
+}
+
+}
+
+load()
+
+function createBlock(data){
+
+blockchain.push({
+time:Date.now(),
+data:data
+})
+
+}
+
+app.get("/mine/:wallet",(req,res)=>{
+
+let w = req.params.wallet
+
+if(!balances[w]) balances[w]=0
+
+balances[w]+=0.001
+
+history.push({
+wallet:w,
+type:"mine",
+amount:0.001
+})
+
+createBlock({
+wallet:w,
+reward:0.001
+})
+
+save()
+
+res.json({status:"mined"})
+
+})
 
 app.get("/balance/:wallet",(req,res)=>{
 
-let wallet = req.params.wallet
-
-let balance = blockchain
-.filter(tx=>tx.wallet==wallet)
-.reduce((a,b)=>a+b.amount,0)
-
-res.json({balance})
-
-})
-
-app.post("/withdraw",(req,res)=>{
-
-let data = req.body
-
-blockchain.push({
-wallet:data.wallet,
-amount:-data.amount,
-time:Date.now()
-})
+let w = req.params.wallet
 
 res.json({
-status:"success"
+balance:balances[w] || 0
 })
 
 })
 
-app.get("/mine",(req,res)=>{
+app.get("/send/:from/:to/:amount",(req,res)=>{
 
-let wallet = req.query.wallet
+let from = req.params.from
+let to = req.params.to
+let amount = parseFloat(req.params.amount)
 
-blockchain.push({
-wallet:wallet,
-amount:0.05,
-time:Date.now()
+if(!balances[from]) balances[from]=0
+if(!balances[to]) balances[to]=0
+
+balances[from]-=amount
+balances[to]+=amount
+
+history.push({
+from,
+to,
+amount,
+type:"send"
 })
 
-res.json({
-status:"mined"
+save()
+
+res.json({status:"sent"})
+
 })
+
+app.get("/history/:wallet",(req,res)=>{
+
+let w = req.params.wallet
+
+let h = history.filter(x=>x.wallet==w || x.from==w || x.to==w)
+
+res.json(h)
 
 })
 
 app.listen(3000,()=>{
 
-console.log("Renris Blockchain Running")
+console.log("Renris Blockchain Active")
 
 })
