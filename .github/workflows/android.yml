@@ -9,9 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    - name: Setup Java
+    - name: Setup Java 17
       uses: actions/setup-java@v4
       with:
         distribution: temurin
@@ -22,8 +23,10 @@ jobs:
       with:
         node-version: 18
 
-    - name: Clean Gradle Cache
-      run: rm -rf ~/.gradle/caches/
+    - name: Increase Gradle Memory
+      run: |
+        mkdir -p ~/.gradle
+        echo "org.gradle.jvmargs=-Xmx4096m" >> ~/.gradle/gradle.properties
 
     - name: Install Dependencies
       run: |
@@ -46,7 +49,7 @@ jobs:
       run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleRelease --no-daemon
+        ./gradlew assembleRelease --stacktrace --no-daemon
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
