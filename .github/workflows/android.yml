@@ -16,11 +16,15 @@ jobs:
       with:
         node-version: 18
 
-    - name: Install dependencies
-      run: npm install
+    - name: Install Dependencies
+      run: |
+        npm install
+        npm install @capacitor/core
+        npm install @capacitor/cli
+        npm install @capacitor/android
 
     - name: Sync Capacitor
-      run: npx cap sync android
+      run: npx cap sync
 
     - name: Build APK
       run: |
