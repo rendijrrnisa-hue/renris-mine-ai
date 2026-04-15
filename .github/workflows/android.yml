@@ -23,7 +23,14 @@ jobs:
         npm install @capacitor/cli
         npm install @capacitor/android
 
-    - name: Sync Capacitor
+    - name: Init Capacitor
+      run: |
+        npx cap init "Renris Mine AI" "com.renris.mine" --web-dir=www
+
+    - name: Add Android
+      run: npx cap add android
+
+    - name: Sync
       run: npx cap sync
 
     - name: Build APK
