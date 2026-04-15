@@ -12,16 +12,38 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Build APK
-      uses: yukiarrr/cordova-build-action@v1
+    - name: Setup Java
+      uses: actions/setup-java@v4
       with:
-        platform: android
-        package: com.renris.mine
-        name: Renris Mine AI
-        url: https://renris-mine-ai.vercel.app
+        distribution: temurin
+        java-version: 17
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Install Cordova
+      run: npm install -g cordova
+
+    - name: Create App
+      run: |
+        cordova create app com.renris.mine "Renris Mine AI"
+        cd app
+        cordova platform add android
+
+    - name: Add WebView
+      run: |
+        cd app
+        cordova plugin add cordova-plugin-inappbrowser
+
+    - name: Build APK
+      run: |
+        cd app
+        cordova build android
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: renris-mine-ai
-        path: "*.apk"
+        path: app/platforms/android/app/build/outputs/apk/debug/*.apk
