@@ -12,47 +12,16 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup Java 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: 17
-
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-
-    - name: Increase Gradle Memory
-      run: |
-        mkdir -p ~/.gradle
-        echo "org.gradle.jvmargs=-Xmx4096m" >> ~/.gradle/gradle.properties
-
-    - name: Install Dependencies
-      run: |
-        npm install
-        npm install @capacitor/core
-        npm install @capacitor/cli
-        npm install @capacitor/android
-
-    - name: Init Capacitor
-      run: |
-        npx cap init "Renris Mine AI" "com.renris.mine" --web-dir=www
-
-    - name: Add Android
-      run: npx cap add android
-
-    - name: Sync
-      run: npx cap sync
-
     - name: Build APK
-      run: |
-        cd android
-        chmod +x gradlew
-        ./gradlew assembleRelease --stacktrace --no-daemon
+      uses: yukiarrr/cordova-build-action@v1
+      with:
+        platform: android
+        package: com.renris.mine
+        name: Renris Mine AI
+        url: https://renris-mine-ai.vercel.app
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: renris-mine-ai
-        path: android/app/build/outputs/apk/release/*.apk
+        path: "*.apk"
