@@ -1,45 +1,42 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Renris Mine AI</title>
 
 <style>
 body{
-background:#050b1a;
+background:#020b1b;
 color:white;
-font-family:Arial;
+font-family:sans-serif;
 text-align:center;
 }
 
-h1{
-color:#00f7ff;
-}
-
-button{
-background:#00f7ff;
-border:none;
-padding:15px;
-margin:10px;
-border-radius:10px;
-font-size:18px;
-}
-
 .card{
-background:#0a1228;
+background:#071a33;
 padding:20px;
-margin:20px;
+margin:15px;
 border-radius:15px;
 }
 
-.balance{
-font-size:25px;
-color:#00f7ff;
+button{
+background:#00e5ff;
+border:none;
+padding:12px;
+margin:5px;
+border-radius:10px;
+font-size:14px;
+}
+
+.menu{
+position:fixed;
+bottom:0;
+width:100%;
+background:#071a33;
+padding:10px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -47,69 +44,120 @@ color:#00f7ff;
 <h1>Renris Mine AI</h1>
 
 <div class="card">
-<h2>Wallet</h2>
+<h3>Wallet</h3>
 <p id="wallet"></p>
 </div>
 
 <div class="card">
-<h2>Balance</h2>
-<p class="balance" id="balance">0 RAI</p>
+<h3>Balance</h3>
+<p id="balance">0 RAI</p>
 </div>
+
+<div>
 
 <button onclick="startMining()">Start Mining</button>
 <button onclick="withdraw()">Withdraw</button>
 
+</div>
+
+<div class="menu">
+
+<button onclick="createWallet()">Create</button>
+<button onclick="importWallet()">Import</button>
+<button onclick="send()">Send</button>
+<button onclick="history()">History</button>
+<button onclick="settings()">Settings</button>
+
+</div>
+
 <script>
 
-let wallet = localStorage.getItem("wallet");
+let wallet = localStorage.getItem("wallet")
 
-if(!wallet){
-wallet = "RAI"+Math.random().toString(36).substring(7);
-localStorage.setItem("wallet",wallet);
+function createWallet(){
+
+wallet = "RAI"+Math.random().toString(36).substring(2,10)
+
+localStorage.setItem("wallet",wallet)
+
+document.getElementById("wallet").innerText = wallet
+
+alert("Wallet Created")
+
 }
 
-document.getElementById("wallet").innerText = wallet;
+function importWallet(){
 
-let balance = 0;
+let w = prompt("Enter Wallet")
+
+localStorage.setItem("wallet",w)
+
+wallet = w
+
+document.getElementById("wallet").innerText = wallet
+
+}
+
+if(!wallet){
+createWallet()
+}else{
+document.getElementById("wallet").innerText = wallet
+}
+
+function loadBalance(){
+fetch("/balance/"+wallet)
+.then(r=>r.json())
+.then(d=>{
+document.getElementById("balance").innerText =
+d.balance + " RAI"
+})
+}
 
 function startMining(){
 
 setInterval(()=>{
 
-balance += 0.05;
+fetch("/mine/"+wallet)
 
-document.getElementById("balance").innerText =
-balance.toFixed(2)+" RAI";
+.then(()=>loadBalance())
 
-},3000)
+},5000)
 
 }
 
 function withdraw(){
+alert("Withdraw system coming soon")
+}
 
-fetch("/withdraw",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-wallet:wallet,
-amount:balance
-})
-})
+function send(){
 
-.then(res=>res.json())
-.then(data=>{
+let to = prompt("Send to wallet")
+let amount = prompt("Amount")
 
-alert("Withdraw sukses");
+fetch("/send/"+wallet+"/"+to+"/"+amount)
+.then(()=>loadBalance())
 
-balance=0;
+}
 
-document.getElementById("balance").innerText="0 RAI";
+function history(){
+
+fetch("/history/"+wallet)
+.then(r=>r.json())
+.then(d=>{
+
+alert(JSON.stringify(d))
 
 })
 
 }
+
+function settings(){
+
+alert("Renris Mine AI v1.0")
+
+}
+
+loadBalance()
 
 </script>
 
