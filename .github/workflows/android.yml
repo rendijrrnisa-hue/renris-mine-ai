@@ -9,28 +9,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Setup Node
-      uses: actions/setup-node@v4
+    - uses: actions/setup-node@v4
       with:
         node-version: 18
 
     - name: Install Cordova
       run: npm install -g cordova
 
-    - name: Install Dependencies
-      run: npm install
-
-    - name: Add Android
-      run: cordova platform add android
+    - name: Create Cordova App
+      run: |
+        cordova create app com.rai.blockchain RaiBlockchain
+        cp -r www/* app/www/
 
     - name: Build APK
-      run: cordova build android
+      run: |
+        cd app
+        cordova platform add android
+        cordova build android
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: rai-blockchain
-        path: platforms/android/app/build/outputs/apk/debug/*.apk
+        name: rai-apk
+        path: app/platforms/android/app/build/outputs/apk/debug/*.apk
