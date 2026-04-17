@@ -1,163 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Renris Mine AI</title>
+<title>RAI Blockchain</title>
 
 <style>
+
 body{
-background:#020b1b;
+background:#071021;
 color:white;
-font-family:sans-serif;
+font-family:Arial;
 text-align:center;
+padding-top:30px;
 }
 
 .card{
-background:#071a33;
+background:#0d1b34;
 padding:20px;
-margin:15px;
+margin:20px;
 border-radius:15px;
+box-shadow:0 0 20px rgba(0,255,200,0.2);
 }
 
 button{
-background:#00e5ff;
+padding:12px 20px;
 border:none;
-padding:12px;
-margin:5px;
 border-radius:10px;
-font-size:14px;
+background:#00e6a8;
+color:black;
+font-weight:bold;
+margin:5px;
 }
 
-.menu{
-position:fixed;
-bottom:0;
-width:100%;
-background:#071a33;
-padding:10px;
+input{
+padding:8px;
+border-radius:8px;
+border:none;
+width:80%;
+}
+
+.small{
+font-size:12px;
+opacity:0.7;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<h1>Renris Mine AI</h1>
+<h1>🪙 RAI Blockchain</h1>
 
 <div class="card">
-<h3>Wallet</h3>
-<p id="wallet"></p>
-</div>
 
-<div class="card">
-<h3>Balance</h3>
-<p id="balance">0 RAI</p>
-</div>
-
-<div>
+<p>Wallet: <span id="wallet"></span></p>
+<p>Balance: <span id="balance">0</span> RAI</p>
 
 <button onclick="startMining()">Start Mining</button>
 <button onclick="withdraw()">Withdraw</button>
 
 </div>
 
-<div class="menu">
+<div class="card">
+<h3>Blockchain Network</h3>
+<p>Network: Renris Mainnet</p>
+<p>Block: <span id="block">0</span></p>
+<p>Hash Rate: <span id="hash">0</span> MH/s</p>
+</div>
 
-<button onclick="createWallet()">Create</button>
-<button onclick="importWallet()">Import</button>
-<button onclick="send()">Send</button>
-<button onclick="history()">History</button>
-<button onclick="settings()">Settings</button>
+<div class="card">
+<h3>Coin Supply</h3>
+<p>Total Supply: 100,000,000 RAI</p>
+<p>Mined: <span id="mined">0</span> RAI</p>
+<p>Remaining: <span id="remain">100000000</span> RAI</p>
+</div>
 
+<div class="card">
+<h3>Mining Level</h3>
+<p>Level: <span id="level">1</span></p>
+<button onclick="upgrade()">Upgrade Level</button>
+</div>
+
+<div class="card">
+<h3>Referral</h3>
+<input id="ref" readonly>
+</div>
+
+<div class="card">
+<h3>Mining History</h3>
+<div id="history"></div>
 </div>
 
 <script>
 
+let balance = localStorage.getItem("balance") || 0
+let mined = localStorage.getItem("mined") || 0
+let level = localStorage.getItem("level") || 1
+let mining = false
+
 let wallet = localStorage.getItem("wallet")
 
-function createWallet(){
-
-wallet = "RAI"+Math.random().toString(36).substring(2,10)
-
-localStorage.setItem("wallet",wallet)
-
-document.getElementById("wallet").innerText = wallet
-
-alert("Wallet Created")
-
-}
-
-function importWallet(){
-
-let w = prompt("Enter Wallet")
-
-localStorage.setItem("wallet",w)
-
-wallet = w
-
-document.getElementById("wallet").innerText = wallet
-
-}
-
 if(!wallet){
-createWallet()
-}else{
-document.getElementById("wallet").innerText = wallet
+wallet = "RAI" + Math.random().toString(36).substring(2)
+localStorage.setItem("wallet", wallet)
 }
 
-function loadBalance(){
-fetch("/balance/"+wallet)
-.then(r=>r.json())
-.then(d=>{
-document.getElementById("balance").innerText =
-d.balance + " RAI"
-})
-}
+
+document.getElementById("wallet").innerText = wallet
+
+document.getElementById("balance").innerText = parseFloat(balance).toFixed(2)
+
+document.getElementById("level").innerText = level
+
+
+let ref = location.href + "?ref=" + wallet
+
+document.getElementById("ref").value = ref
+
 
 function startMining(){
 
+if(mining) return
+
+mining = true
+
 setInterval(()=>{
 
-fetch("/mine/"+wallet)
+let speed = level * 0.02
 
-.then(()=>loadBalance())
+balance = parseFloat(balance) + speed
+mined = parseFloat(mined) + speed
 
-},5000)
+localStorage.setItem("balance", balance)
+localStorage.setItem("mined", mined)
+
+
+document.getElementById("balance").innerText = parseFloat(balance).toFixed(2)
+
+document.getElementById("mined").innerText = parseFloat(mined).toFixed(2)
+
+
+document.getElementById("remain").innerText = (100000000 - mined).toFixed(2)
+
+
+addHistory(speed)
+
+updateNetwork()
+
+},3000)
 
 }
+
 
 function withdraw(){
-alert("Withdraw system coming soon")
-}
 
-function send(){
+alert("Withdraw Success: " + balance + " RAI")
 
-let to = prompt("Send to wallet")
-let amount = prompt("Amount")
+balance = 0
 
-fetch("/send/"+wallet+"/"+to+"/"+amount)
-.then(()=>loadBalance())
+localStorage.setItem("balance", balance)
+
+location.reload()
 
 }
 
-function history(){
 
-fetch("/history/"+wallet)
-.then(r=>r.json())
-.then(d=>{
+function upgrade(){
 
-alert(JSON.stringify(d))
+if(balance >= 10){
 
-})
+level++
+balance -= 10
+
+localStorage.setItem("level", level)
+localStorage.setItem("balance", balance)
+
+location.reload()
+
+}else{
+
+alert("Butuh 10 RAI untuk upgrade")
 
 }
 
-function settings(){
+}
 
-alert("Renris Mine AI v1.0")
+
+function addHistory(amount){
+
+let div = document.getElementById("history")
+
+let p = document.createElement("p")
+
+p.innerText = "+" + amount.toFixed(3) + " RAI"
+
+div.prepend(p)
 
 }
 
-loadBalance()
+
+function updateNetwork(){
+
+let block = Math.floor(Math.random()*100000)
+let hash = (Math.random()*100).toFixed(2)
+
+
+document.getElementById("block").innerText = block
+
+document.getElementById("hash").innerText = hash
+
+}
+
 
 </script>
 
