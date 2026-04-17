@@ -51,7 +51,7 @@ opacity:0.7;
 
 <body>
 
-<h1>🪙 RAI Blockchain</h1>
+<h1 onclick="devClick()">🪙 RAI Blockchain</h1>
 
 <div class="card">
 
@@ -111,7 +111,35 @@ localStorage.setItem("wallet", wallet)
 document.getElementById("wallet").innerText = wallet
 
 document.getElementById("balance").innerText = parseFloat(balance).toFixed(2)
+let devClickCount = 0
 
+function devClick(){
+devClickCount++
+
+if(devClickCount >= 5){
+document.getElementById("devPanel").style.display = "block"
+loadDev()
+}
+}
+
+function closeDev(){
+document.getElementById("devPanel").style.display = "none"
+devClickCount = 0
+}
+
+function loadDev(){
+
+let users = localStorage.getItem("users") || 1
+let mining = localStorage.getItem("totalMining") || 0
+let withdraw = localStorage.getItem("totalWithdraw") || 0
+let fee = localStorage.getItem("devFee") || 0
+
+document.getElementById("devUsers").innerText = users
+document.getElementById("devMining").innerText = parseFloat(mining).toFixed(2)
+document.getElementById("devWithdraw").innerText = parseFloat(withdraw).toFixed(2)
+document.getElementById("devFee").innerText = parseFloat(fee).toFixed(2)
+
+}
 document.getElementById("level").innerText = level
 
 
@@ -215,6 +243,17 @@ document.getElementById("hash").innerText = hash
 
 
 </script>
+<div id="devPanel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;padding:20px;z-index:9999">
 
+<h2>Developer Dashboard</h2>
+
+<p>Total Users: <span id="devUsers">0</span></p>
+<p>Total Mining: <span id="devMining">0</span> RAI</p>
+<p>Total Withdraw: <span id="devWithdraw">0</span> RAI</p>
+<p>Developer Fee: <span id="devFee">0</span> RAI</p>
+
+<button onclick="closeDev()">Close</button>
+
+</div>
 </body>
 </html>
