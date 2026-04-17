@@ -12,12 +12,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: 17
-
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -26,24 +20,17 @@ jobs:
     - name: Install Cordova
       run: npm install -g cordova
 
-    - name: Create App
-      run: |
-        cordova create app com.renris.mine "Renris Mine AI"
-        cd app
-        cordova platform add android
+    - name: Install Dependencies
+      run: npm install
 
-    - name: Add WebView
-      run: |
-        cd app
-        cordova plugin add cordova-plugin-inappbrowser
+    - name: Add Android
+      run: cordova platform add android
 
     - name: Build APK
-      run: |
-        cd app
-        cordova build android
+      run: cordova build android
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: renris-mine-ai
-        path: app/platforms/android/app/build/outputs/apk/debug/*.apk
+        name: rai-blockchain
+        path: platforms/android/app/build/outputs/apk/debug/*.apk
