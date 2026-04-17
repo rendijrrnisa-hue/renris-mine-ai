@@ -10,17 +10,47 @@ app.use(bodyParser.json())
 
 let blockchain = []
 let pending = []
+function mineBlock(block){
 
+let hash = ""
+let nonce = 0
+
+while(hash.substring(0,4) !== "0000"){
+
+nonce++
+
+block.nonce = nonce
+
+hash = crypto.createHash("sha256")
+.update(JSON.stringify(block))
+.digest("hex")
+
+}
+
+block.hash = hash
+
+return block
+
+}
 function createBlock(){
 
 const block = {
 index: blockchain.length + 1,
 timestamp: Date.now(),
 transactions: pending,
-previousHash: blockchain.length ? blockchain[blockchain.length-1].hash : "0",
-nonce: Math.random(),
+previousHash: blockchain.length 
+? blockchain[blockchain.length-1].hash 
+: "0"
 }
 
+const minedBlock = mineBlock(block)
+
+pending = []
+blockchain.push(minedBlock)
+
+return minedBlock
+
+}
 block.hash = crypto.createHash("sha256")
 .update(JSON.stringify(block))
 .digest("hex")
