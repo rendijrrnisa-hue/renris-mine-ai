@@ -1,123 +1,83 @@
-const express = require("express")
-const fs = require("fs")
+const express = require('express')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const crypto = require('crypto')
 
 const app = express()
 
-let balances = {}
-let history = []
+app.use(cors())
+app.use(bodyParser.json())
+
 let blockchain = []
+let pending = []
 
-function save(){
+function createBlock(){
 
-fs.writeFileSync("data.json",
-JSON.stringify({
-balances,
-history,
-blockchain
-})
-)
+const block = {
+index: blockchain.length + 1,
+timestamp: Date.now(),
+transactions: pending,
+previousHash: blockchain.length ? blockchain[blockchain.length-1].hash : "0",
+nonce: Math.random(),
+}
+
+block.hash = crypto.createHash("sha256")
+.update(JSON.stringify(block))
+.digest("hex")
+
+pending = []
+blockchain.push(block)
+
+return block
 
 }
 
-function load(){
 
-if(fs.existsSync("data.json")){
-
-let data = JSON.parse(
-fs.readFileSync("data.json")
-)
-
-balances = data.balances || {}
-history = data.history || []
-blockchain = data.blockchain || []
-
-}
-
-}
-
-load()
-
-function createBlock(data){
-
-blockchain.push({
-time:Date.now(),
-data:data
+app.get('/chain',(req,res)=>{
+res.json(blockchain)
 })
 
-}
 
-app.get("/mine/:wallet",(req,res)=>{
+app.post('/mine',(req,res)=>{
 
-let w = req.params.wallet
+const {wallet} = req.body
 
-if(!balances[w]) balances[w]=0
-
-balances[w]+=0.001
-
-history.push({
-wallet:w,
-type:"mine",
-amount:0.001
+pending.push({
+wallet,
+amount:0.05
 })
 
-createBlock({
-wallet:w,
-reward:0.001
-})
-
-save()
-
-res.json({status:"mined"})
-
-})
-
-app.get("/balance/:wallet",(req,res)=>{
-
-let w = req.params.wallet
+const block = createBlock()
 
 res.json({
-balance:balances[w] || 0
+status:"mined",
+block
 })
 
 })
 
-app.get("/send/:from/:to/:amount",(req,res)=>{
 
-let from = req.params.from
-let to = req.params.to
-let amount = parseFloat(req.params.amount)
+app.post('/balance',(req,res)=>{
 
-if(!balances[from]) balances[from]=0
-if(!balances[to]) balances[to]=0
+const {wallet} = req.body
 
-balances[from]-=amount
-balances[to]+=amount
+let balance = 0
 
-history.push({
-from,
-to,
-amount,
-type:"send"
+blockchain.forEach(b=>{
+
+b.transactions.forEach(t=>{
+if(t.wallet === wallet){
+balance += t.amount
+}
 })
-
-save()
-
-res.json({status:"sent"})
 
 })
 
-app.get("/history/:wallet",(req,res)=>{
-
-let w = req.params.wallet
-
-let h = history.filter(x=>x.wallet==w || x.from==w || x.to==w)
-
-res.json(h)
+res.json({balance})
 
 })
+
 
 app.listen(3000,()=>{
-
-console.log("Renris Blockchain Active")
-
+console.log("RAI Blockchain Running 3000")
 })
