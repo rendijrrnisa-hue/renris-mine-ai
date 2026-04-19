@@ -51,7 +51,8 @@ blockchain.push(minedBlock)
 return minedBlock
 
 }
-block.hash = crypto.createHash("sha256")
+block.hash = 
+crypto.createHash("sha256")
 .update(JSON.stringify(block))
 .digest("hex")
 
