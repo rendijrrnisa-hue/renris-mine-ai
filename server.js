@@ -108,7 +108,9 @@ res.json({balance})
 
 })
 
-
+app.get("/", (req,res)=>{
+res.send("Renris Mine AI Running")
+})
 const PORT = process.env.PORT || 3000
 
 app.listen(PORT, () => {
